@@ -1,5 +1,5 @@
-# AoC2021
-My [Advent of Code 2021](https://adventofcode.com/2021) solutions.
+# AoC
+My [Advent of Code](https://adventofcode.com) solutions.
 
 Aiming at clean, maintainable code, nothing clever.
 
