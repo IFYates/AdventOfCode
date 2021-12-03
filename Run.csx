@@ -30,8 +30,30 @@ if (!File.Exists($"{year}/Day {day}/Part{part}.cs"))
     return;
 }
 
+// Pipe input in to stdin
+string input = null;
+if (File.Exists($"{year}/Day {day}/Input{part}.txt"))
+{
+    input = File.ReadAllText($"{year}/Day {day}/Input{part}.txt");
+}
+else if (File.Exists($"{year}/Day {day}/Input.txt"))
+{
+    input = File.ReadAllText($"{year}/Day {day}/Input.txt");
+}
+
 Console.WriteLine($"Executing {year} Day {day} Part {part}...");
 Console.WriteLine();
 
 Environment.CurrentDirectory = Path.Combine(Environment.CurrentDirectory, $"{year}/Day {day}");
-System.Diagnostics.Process.Start("dotnet-script", $"Part{part}.cs").WaitForExit();
+var process = System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo()
+{
+    FileName = "dotnet-script",
+    Arguments = $"Part{part}.cs",
+    RedirectStandardInput = input?.Length > 0
+});
+if (input?.Length > 0)
+{
+    process.StandardInput.Write(input);
+    process.StandardInput.Close();
+}
+process.WaitForExit();
