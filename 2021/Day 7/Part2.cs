@@ -1,10 +1,12 @@
 var pos = Console.In.ReadLine().Split(',').Select(int.Parse).ToList();
 
-var result = 0;
+static int tri(int n) => (n * (n + 1)) / 2;
+
+var result = int.MaxValue;
 for (var target = pos.Min(); target <= pos.Max(); ++target)
 {
-    var val = pos.Sum(p => { var n = Math.Abs(p - target); return ((n * n) + n) / 2; });
-    if (result == 0 || val < result) { result = val; }
+    var val = pos.Sum(p => tri(Math.Abs(p - target)));
+    result = Math.Min(val, result);
 }
 
 Console.WriteLine("> " + result);

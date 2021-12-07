@@ -1,12 +1,10 @@
 var pos = Console.In.ReadLine().Split(',').Select(int.Parse).ToList();
 
-//var target = pos.GroupBy(p => p).OrderBy(g => g.Count()).Last().Key;
-
-var result = 999999;
+var result = int.MaxValue;
 for (var target = pos.Min(); target <= pos.Max(); ++target)
 {
     var val = pos.Sum(p => Math.Abs(p - target));
-    if (val < result) { result = val; }
+    result = Math.Min(val, result);
 }
 
 Console.WriteLine("> " + result);
