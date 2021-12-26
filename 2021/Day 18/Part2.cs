@@ -1,126 +1,46 @@
-using System.Text;
-using System.Text.RegularExpressions;
+using System.Drawing;
 
-var inp = File.ReadAllLines("2021/Day 18/Input.txt");
+var ln = File.ReadAllText("2021/Day 17/Input.txt");
 
-var magnitude = 0;
-for (var i = 0; i < inp.Length; ++i)
+var m = System.Text.RegularExpressions.Regex.Match(ln, @"^target area: x=(?<x1>\-?\d+)\.\.(?<x2>\-?\d+), y=(?<y1>\-?\d+)\.\.(?<y2>\-?\d+)$");
+if (!m.Success) throw new Exception($"Invalid input: {ln}");
+
+int x1 = int.Parse(m.Groups["x1"].Value), x2 = int.Parse(m.Groups["x2"].Value);
+int y1 = int.Parse(m.Groups["y1"].Value), y2 = int.Parse(m.Groups["y2"].Value);
+var tl = new Point(Math.Min(x1, x2), Math.Min(y1, y2));
+var br = new Point(Math.Max(x1, x2), Math.Max(y1, y2));
+var targetArea = new Rectangle(tl, new Size(br.X - tl.X + 1, br.Y - tl.Y + 1));
+
+bool run(int velX, int velY, out int maxY)
 {
-    for (var j = 0; j < inp.Length; ++j)
+    maxY = 0;
+    int posX = 0, posY = 0;
+    while (posX <= br.X && posY >= tl.Y)
     {
-        if (i == j) continue;
+        posX += velX;
+        posY += velY;
+        velX = velX > 0 ? Math.Max(0, velX - 1) : Math.Min(0, velX + 1);
+        velY = velY - 1;
+        maxY = Math.Max(maxY, posY);
 
-        var val = getMagnitude(inp[i], inp[j]);
-        magnitude = Math.Max(magnitude, val);
-    }
-}
-Console.WriteLine("> " + magnitude);
-
-int getMagnitude(string ln1, string ln2)
-{
-    var data = new StringBuilder($"[{ln1},{ln2}]");
-    while (process(data))
-    {
-        //Console.WriteLine(data.ToString());
-    }
-
-    var str = data.ToString();
-    while (true)
-    {
-        var m = Regex.Match(str, @"\[(\d+),(\d+)\]");
-        if (!m.Success) break;
-
-        var val = (int.Parse(m.Groups[1].Value) * 3)
-            + (int.Parse(m.Groups[2].Value) * 2);
-        str = str.Replace(m.Value, val.ToString());
-    }
-    return int.Parse(str);
-}
-
-bool process(StringBuilder ln)
-{
-    var depth = 0;
-    for (var i = 0; i < ln.Length; ++i)
-    {
-        if (ln[i] == '[')
+        if (targetArea.Contains(posX, posY))
         {
-            if (depth == 4)
-            {
-                var start = i++;
-                var lft = readNum(ln, ref i);
-                ++i;
-                var rgt = readNum(ln, ref i);
-                ln.Remove(start, i - start + 1);
-                ln.Insert(start, '0');
-
-                var num = findNum(ln, start, +1);
-                if (num.start > -1)
-                {
-                    i = num.start;
-                    var val = readNum(ln, ref i);
-                    ln.Remove(num.start, num.len);
-                    ln.Insert(num.start, val + rgt);
-                }
-
-                num = findNum(ln, start, -1);
-                if (num.start > -1)
-                {
-                    i = num.start;
-                    var val = readNum(ln, ref i);
-                    ln.Remove(num.start, num.len);
-                    ln.Insert(num.start, val + lft);
-                }
-
-                return true;
-            }
-            ++depth;
-        }
-        else if (ln[i] == ']')
-        {
-            --depth;
-        }
-    }
-    for (var i = 0; i < ln.Length; ++i)
-    {
-        if (ln[i] is >= '0' and <= '9')
-        {
-            var start = i;
-            var num = readNum(ln, ref i);
-            if (num > 9)
-            {
-                ln.Remove(start, i - start);
-                ln.Insert(start, $"[{num / 2},{num - (num / 2)}]");
-                return true;
-            }
+            return true;
         }
     }
     return false;
 }
-int readNum(StringBuilder ln, ref int pos)
+
+var result = 0;
+for (var velX = 1; velX <= 1000; ++velX)
 {
-    var value = 0;
-    while (ln[pos] is >= '0' and <= '9')
+    for (var velY = -1000; velY <= 1000; ++velY)
     {
-        value *= 10;
-        value += ln[pos] - '0';
-        ++pos;
+        if (run(velX, velY, out var maxY))
+        {
+            ++result;
+            Console.WriteLine(velX + "," + velY);
+        }
     }
-    return value;
 }
-(int start, int len) findNum(StringBuilder ln, int pos, int dir)
-{
-    pos += dir;
-    while (ln[pos] is < '0' or > '9')
-    {
-        pos += dir;
-        if (pos < 0 || pos >= ln.Length) return (-1, -1);
-    }
-    var a = pos;
-    while (ln[pos] is >= '0' and <= '9')
-    {
-        pos += dir;
-    }
-    return dir < 0
-        ? (pos + 1, a - pos)
-        : (a, pos - a);
-}
+Console.WriteLine("> " + result);
